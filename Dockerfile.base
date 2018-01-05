@@ -1,12 +1,14 @@
-FROM ubuntu:16.04
+FROM debian:jessie-slim
 
-MAINTAINER rhodey@anhonestefort.org
+MAINTAINER root@kevit.info
 
 ARG CC_TOOL=/usr/bin/arm-linux-gnueabihf-
 ENV CC_TOOL=${CC_TOOL}
-
-RUN apt-get update
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y curl
+RUN echo "deb http://emdebian.org/tools/debian/ jessie main" >> /etc/apt/sources.list && curl http://emdebian.org/tools/debian/emdebian-toolchain-archive.key | apt-key add -
+RUN echo "deb-src http://deb.debian.org/debian jessie main" >> /etc/apt/sources.list
+RUN cat /etc/apt/sources.list
+RUN dpkg --add-architecture armhf &&  dpkg --print-foreign-architectures && apt-get update && apt-get install -y \
   curl \
   bc \
   git \
@@ -19,7 +21,10 @@ RUN apt-get install -y \
   lzop \
   libssl-dev \
   gcc-arm-linux-gnueabihf \
-  binutils-arm-linux-gnueabihf
+  binutils-arm-linux-gnueabihf \
+  crossbuild-essential-armhf \
+  debhelper \
+  dkms
 
 ARG BASE_DIR
 

@@ -1,8 +1,8 @@
 FROM chip-config.img
 
 MAINTAINER rhodey@anhonestefort.org
-
 ARG CC_TOOL=/usr/bin/arm-linux-gnueabihf-
+
 
 ARG BASE_DIR
 ARG MAKE_J
@@ -16,4 +16,20 @@ WORKDIR ${KERNEL_DIR}
 ARG KBUILD_DEBARCH=armhf
 ARG KDEB_CHANGELOG_DIST=jessie
 ARG LOCALVERSION=-version
+
+WORKDIR ${KERNEL_DIR}
+RUN touch .scmversion
+RUN make ARCH=arm CROSS_COMPILE=${CC_TOOL} -j ${MAKE_J}
+RUN make ARCH=arm CROSS_COMPILE=${CC_TOOL} INSTALL_MOD_PATH=${MOD_DIR} modules_install
+WORKDIR ${KERNEL_DIR}
 RUN make ARCH=arm CROSS_COMPILE=${CC_TOOL} -j ${MAKE_J} deb-pkg
+
+
+ARG DRIVER_DIR=${BASE_DIR}/drive
+WORKDIR ${DRIVER_DIR}
+RUN git clone --single-branch --branch debian https://github.com/NextThingCo/RTL8723BS && tar cvjf rtl8723bs-mp-driver_4.3.16-13854.20150410-BTCOEX20150119-5844-ntc.orig.tar.bz2 RTL8723BS/
+RUN mv rtl8723bs-mp-driver_4.3.16-13854.20150410-BTCOEX20150119-5844-ntc.orig.tar.bz2 ..
+
+WORKDIR ${RTL_DIR}
+RUN DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -aarmhf
+
